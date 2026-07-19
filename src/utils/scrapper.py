@@ -1,6 +1,10 @@
 import wikipediaapi
 from pathlib import Path
 
+from colorama import Fore, init
+
+init(autoreset=True)
+
 def sections_to_text(section, remove_sections):
     if section.title.strip() in remove_sections:
         return ""
@@ -12,7 +16,7 @@ def sections_to_text(section, remove_sections):
         
     return text
 
-def scrap(wiki: wikipediaapi.Wikipedia, titles: list[str], remove_sections: list | None, file: Path | str):
+def scrap(wiki: wikipediaapi.Wikipedia, titles: list[str], remove_sections: list | None, file: Path | str) -> int:
     if remove_sections is None:
         remove_sections = [
             "อ้างอิง",
@@ -21,16 +25,18 @@ def scrap(wiki: wikipediaapi.Wikipedia, titles: list[str], remove_sections: list
             "หนังสืออ่านเพิ่ม",
             "อ่านเพิ่ม",
         ]
-        
+    
+    total = len(titles)
+    
     with open(file, 'a', encoding='utf-8') as f:
         for title in titles:
-            print(f'Extracting: {title}...')
+            print(f'{Fore.CYAN}Extracting{Fore.RESET}: {title}...')
             page = wiki.page(title)
             
             if not page.exists():
-                raise ValueError(f'"{title}" not found. Skipping...')
+                raise ValueError(f'{Fore.RED}Error{Fore.RESET}:"{title}" not found. Skipping...')
                 continue
-            
+
             text = page.summary + "\n"
             
             for section in page.sections:
@@ -38,3 +44,5 @@ def scrap(wiki: wikipediaapi.Wikipedia, titles: list[str], remove_sections: list
                 
             f.write(text)
             f.write("\n")
+            
+    return total
