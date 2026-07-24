@@ -6,11 +6,18 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "colorama>=0.4.6",
+    "datasets>=5.0.0",
     "onnx>=1.22.0",
     "onnxruntime>=1.27.0",
     "onnxscript>=0.7.1",
     "requests>=2.34.2",
+    "sentencepiece>=0.2.2",
     "torch>=2.13.0",
     "torchvision>=0.28.0",
     "wikipedia-api>=0.15.0",
+]
+
+[tool.uv.workspace]
+members = [
+    "gutenberg",
 ]
