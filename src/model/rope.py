@@ -6,7 +6,7 @@ class RotaryEmbedding(nn.Module):
         super().__init__()
         
         self.dim = dim
-        self.max_seq_len = self.max_seq_len
+        self.max_seq_len = max_seq_len
         self.thata = theta
         
         inv_freq = 1.0 / (theta ** (torch.arange(0, dim, 2).float() / dim))
@@ -40,10 +40,10 @@ class RotaryEmbedding(nn.Module):
         return cos, sin
     
 def rotate_half(x):
-    x1 = x[..., :x.shape[-1] // 2]
+    x1 = x[..., : x.shape[-1] // 2]
     x2 = x[..., x.shape[-1] // 2:]
     
-    return torch.cat((-x2, x1), dim=1)
+    return torch.cat((-x2, x1), dim=-1)
 
 def apply_rope(q, k, cos, sin):
     cos = cos.unsqueeze(0).unsqueeze(0)

@@ -44,28 +44,18 @@ def accuracy(logits, targets):
 
 class TokenDataset(Dataset):
     def __init__(self, path, block_size):
-        self.data = np.memmap(path, dtype=np.uint32, mode="r")
-
+        self.data = np.memmap(path, dtype=np.uint32, mode='r')
         self.block_size = block_size
-
+        
     def __len__(self):
-        return len(self.data) - self.block_size
-
+        return len(self.data) // self.block_size
+    
     def __getitem__(self, idx):
-        x = torch.from_numpy(
-            self.data[
-                idx:
-                idx+self.block_size
-            ].astype(np.int64)
-        )
-
-        y = torch.from_numpy(
-            self.data[
-                idx+1:
-                idx+self.block_size+1
-            ].astype(np.int64)
-        )
-
+        start = idx * self.block_size
+        
+        x = torch.from_numpy(self.data[start:start+self.block_size].astype(np.int64))
+        y = torch.from_numpy(self.data[start+1:start+self.block_size+1].astype(np.int64))
+        
         return x, y
 
 def create_loader(path):
@@ -171,10 +161,8 @@ params = sum(
     for p in model.parameters()
 )
 
-
-print(
-    f"Parameters: {params/1e6:.2f}M"
-)
+print(f"{Fore.LIGHTBLUE_EX}Parameters{Fore.RESET}: {params}")
+print(f'{Fore.LIGHTBLUE_EX}Shards{Fore.RESET}: {len(SHARDS)}')
 
 optimizer = torch.optim.AdamW(
     model.parameters(),
@@ -184,6 +172,8 @@ optimizer = torch.optim.AdamW(
     eps=EPS
 )
 
+print(f'{Fore.LIGHTBLUE_EX}Optimizer{Fore.RESET}: {optimizer}')
+
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer,
     mode="min",
@@ -192,13 +182,11 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     min_lr=MIN_LR
 )
 
-scaler = torch.cuda.amp.GradScaler(
-    enabled=DEVICE == "cuda"
-)
+print(f'{Fore.LIGHTBLUE_EX}Scheduler{Fore.RESET}: {scheduler}')
 
-val_loader = create_loader(
-    DATA_DIR / "val.bin"
-)
+scaler = torch.amp.GradScaler("cuda", enabled=DEVICE == "cuda")
+
+val_loader = create_loader(VAL_PATH)
 
 for epoch in range(EPOCHS):
     model.train()
@@ -214,9 +202,7 @@ for epoch in range(EPOCHS):
             f"\nTraining shard: {shard}"
         )
 
-        loader = create_loader(
-            shard
-        )
+        loader = create_loader(shard)
 
         bar = tqdm(
             loader,
@@ -308,7 +294,7 @@ for epoch in range(EPOCHS):
             bar.set_postfix_str(
 
                 f"{PERCENT}"
-                f"{bar.format_dict['percentage']:.0f}% "
+                f"{(bar.n / bar.total * 100):.2f}% "
                 f"{BATCH}"
                 f"{speed:.1f} batch/s "
                 f"{TIME_GREEN}"
