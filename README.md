@@ -84,9 +84,7 @@ The `+` opeartions are residual connections, that allow information to flow thro
 Instead of using BatchNorm or LayerNorm, I want this to be like LLaMA-style models which use RMSNorm to stabilize activations, make training easier and reduce computations
 
 - Formula
-$$
-RMS(x) = \sqrt{\frac{1}{d}\sum_{i=1}^{d}x_i^2}
-$$
+$$RMS(x) = \sqrt{\frac{1}{d}\sum_{i=1}^{d}x_i^2}$$
 
 4. Casual Self Attention
 
