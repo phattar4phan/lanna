@@ -16,7 +16,7 @@ TOKENIZER_PATH = TOKEN_DIR / "lanna.model"
 VOCAB_SIZE = 32_000
 
 # models
-CONTEXT_LENGTH = 1024
+CONTEXT_LENGTH = 512
 
 N_LAYERS, N_HEADS = 8, 8
 
@@ -37,9 +37,9 @@ DTYPE = (
     torch.bfloat16 if DEVICE == "cuda" and torch.cuda.is_bf16_supported() else torch.float16 if DEVICE == "cuda" else torch.float32
 )
 
-EPOCHS = 5
+EPOCHS = 3
 
-BATCH_SIZE = 4
+BATCH_SIZE = 3
 GRAD_ACCUM = 16
 
 LEARNING_RATE = 3e-4
@@ -60,7 +60,10 @@ WARMUP_STEPS = 2_000
 NUM_WORKERS = 6
 PIN_MEMORY = True
 
-SHARDS = sorted(DATA_DIR.glob("train_*.bin"))
+SHARDS_DIR = DATA_DIR / "shards"
+SHARDS = sorted(SHARDS_DIR.glob("train_*.bin"))
+
+VAL_PATH = DATA_DIR / "val.bin"
 
 # checkpoints
 SAVE_EVERY = 1
