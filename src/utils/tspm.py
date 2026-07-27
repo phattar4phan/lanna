@@ -5,8 +5,8 @@ from pathlib import Path
 Path('./token').mkdir(parents=True, exist_ok=True)
 
 spm.SentencePieceTrainer.train(
-    input='./data/instruct.txt',
-    model_prefix='./token/lanna',
+    input='./data/instruct.txt,./data/general.txt',
+    model_prefix='./token/llm',
     vocab_size=32000,
     model_type="unigram",
     input_sentence_size=5_000_000,
