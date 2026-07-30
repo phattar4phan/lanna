@@ -3,19 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, Send } from "lucide-react";
 import { Reveal } from "./utils";
 
-const MOCK = [
-  "That's an interesting question.",
-  "I'm still under active development.",
-  "Here's one possible explanation...",
-  "My current architecture contains approximately 50 million parameters.",
-  "I don't always know the answer, but here's my best guess.",
-];
-
 type Msg = { id: number; role: "user" | "assistant"; text: string };
-
-function pick<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
 
 export default function Chat() {
   const [msgs, setMsgs] = useState<Msg[]>([
@@ -33,7 +21,7 @@ export default function Chat() {
     bottom.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs, typing]);
 
-  function send(e: FormEvent) {
+  async function send(e: FormEvent) {
     e.preventDefault();
     const clean = input.trim();
     if (!clean || typing) return;
@@ -42,13 +30,22 @@ export default function Chat() {
     setInput("");
     setTyping(true);
 
-    setTimeout(() => {
+    try {
+      const res = await fetch("http://localhost:8000/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: clean }),
+      });
+      const data = await res.json();
+      setMsgs((p) => [...p, { id: Date.now() + 1, role: "assistant", text: data.response }]);
+    } catch {
       setMsgs((p) => [
         ...p,
-        { id: Date.now() + 1, role: "assistant", text: pick(MOCK) },
+        { id: Date.now() + 1, role: "assistant", text: "Server is offline. Start the LLM server to chat." },
       ]);
+    } finally {
       setTyping(false);
-    }, 1000 + Math.random() * 1500);
+    }
   }
 
   const bubble = (role: "user" | "assistant") =>
@@ -66,7 +63,7 @@ export default function Chat() {
             </h2>
             <div className="w-12 h-1.5 bg-[#FF5722] mx-auto mb-4" />
             <p className="text-[#F1F1F1]/50 text-lg font-medium">
-              A live demo interface — responses are simulated for now.
+              Chat with the model — responses are real inference.
             </p>
           </div>
         </Reveal>
