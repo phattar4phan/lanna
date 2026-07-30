@@ -12,9 +12,3 @@ dependencies = [
     "torch>=2.13.0",
     "tqdm>=4.70.0",
 ]
-
-[tool.uv.workspace]
-members = [
-    "gutenberg",
-    "server",
-]
