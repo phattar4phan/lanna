@@ -39,7 +39,7 @@ DTYPE = (
 
 EPOCHS = 3
 
-BATCH_SIZE = 3
+BATCH_SIZE = 4
 GRAD_ACCUM = 16
 
 LEARNING_RATE = 3e-4
@@ -57,7 +57,7 @@ MAX_GRAD_NORM = 1.0
 WARMUP_STEPS = 2_000
 
 # data
-NUM_WORKERS = 6
+NUM_WORKERS = 16
 PIN_MEMORY = True
 
 SHARDS_DIR = DATA_DIR / "shards"
@@ -65,8 +65,8 @@ SHARDS = sorted(SHARDS_DIR.glob("train_*.bin"))
 
 GENERAL_PATH = DATA_DIR / "general.bin"
 
-INSTRUCT_VAL_PATH = DATA_DIR / "ival.bin"
-GENERAL_VAL_PATH = DATA_DIR / "gval.bin"
+INSTRUCT_VAL_PATH = DATA_DIR / "sftval.bin"
+GENERAL_VAL_PATH = DATA_DIR / "genval.bin"
 
 # checkpoints
 SAVE_EVERY = 1
