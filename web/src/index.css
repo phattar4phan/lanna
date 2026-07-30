@@ -2,9 +2,9 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-brand: #FF5722;
-  --color-neutral: #F1F1F1;
-  --color-accent: #FFC107;
+  --color-brand: #010101;
+  --color-neutral: #3E3E3E;
+  --color-accent: #D72F19;
 }
 
 * {
@@ -13,14 +13,14 @@
 
 body {
   margin: 0;
-  background: #2D2D2D;
-  color: #F1F1F1;
+  background: #F9C25B;
+  color: #010101;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background: rgba(255, 87, 34, 0.3);
-  color: #F1F1F1;
+  background: rgba(215, 47, 25, 0.15);
+  color: #010101;
 }

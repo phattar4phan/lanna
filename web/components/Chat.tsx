@@ -3,7 +3,19 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, Send } from "lucide-react";
 import { Reveal } from "./utils";
 
+const MOCK = [
+  "That's an interesting question.",
+  "I'm still under active development.",
+  "Here's one possible explanation...",
+  "My current architecture contains approximately 50 million parameters.",
+  "I don't always know the answer, but here's my best guess.",
+];
+
 type Msg = { id: number; role: "user" | "assistant"; text: string };
+
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
 export default function Chat() {
   const [msgs, setMsgs] = useState<Msg[]>([
@@ -21,7 +33,7 @@ export default function Chat() {
     bottom.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs, typing]);
 
-  async function send(e: FormEvent) {
+  function send(e: FormEvent) {
     e.preventDefault();
     const clean = input.trim();
     if (!clean || typing) return;
@@ -30,77 +42,67 @@ export default function Chat() {
     setInput("");
     setTyping(true);
 
-    try {
-      const res = await fetch("http://localhost:8000/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: clean }),
-      });
-      const data = await res.json();
-      setMsgs((p) => [...p, { id: Date.now() + 1, role: "assistant", text: data.response }]);
-    } catch {
+    setTimeout(() => {
       setMsgs((p) => [
         ...p,
-        { id: Date.now() + 1, role: "assistant", text: "Server is offline. Start the LLM server to chat." },
+        { id: Date.now() + 1, role: "assistant", text: pick(MOCK) },
       ]);
-    } finally {
       setTyping(false);
-    }
+    }, 1000 + Math.random() * 1500);
   }
 
   const bubble = (role: "user" | "assistant") =>
     role === "user"
-      ? "bg-[#FF5722] text-[#2D2D2D] rounded rounded-br-none border-2 border-[#FF5722]"
-      : "bg-[#3A3A3A] text-[#F1F1F1] rounded rounded-bl-none border-2 border-[#F1F1F1]/10";
+      ? "bg-brand text-[#F9C25B] rounded-br-md"
+      : "bg-neutral/10 text-neutral rounded-bl-md";
 
   return (
-    <section id="chat" className="py-24 px-4 border-t-2 border-[#F1F1F1]/5">
+    <section id="chat" className="py-24 px-4">
       <div className="max-w-2xl mx-auto">
         <Reveal>
           <div className="text-center mb-12">
-            <h2 className="text-4xl sm:text-5xl font-black text-[#F1F1F1] tracking-tight mb-3">
+            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4 text-brand">
               Try LLM
             </h2>
-            <div className="w-12 h-1.5 bg-[#FF5722] mx-auto mb-4" />
-            <p className="text-[#F1F1F1]/50 text-lg font-medium">
-              Chat with the model — responses are real inference.
+            <p className="text-neutral text-lg font-light">
+              A live demo interface — responses are simulated for now.
             </p>
           </div>
         </Reveal>
 
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="rounded border-2 border-[#F1F1F1]/10 bg-[#333333] overflow-hidden"
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="rounded-3xl border border-brand/10 bg-white shadow-xl shadow-brand/5 overflow-hidden"
         >
-          <div className="h0125 overflow-y-auto p-6 space-y-4">
+          <div className="h-[500px] overflow-y-auto p-6 space-y-4">
             <AnimatePresence>
               {msgs.map((m) => (
                 <motion.div
                   key={m.id}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.2 }}
+                  initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.3 }}
                   className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
                 >
-                  <div className={`max-w-[80%] px-5 py-3 text-sm font-medium leading-relaxed ${bubble(m.role)}`}>
+                  <div className={`max-w-[80%] px-5 py-3 rounded-2xl text-sm leading-relaxed ${bubble(m.role)}`}>
                     {m.text}
                   </div>
                 </motion.div>
               ))}
               {typing && (
                 <motion.div
-                  initial={{ opacity: 0, y: 6 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="flex justify-start"
                 >
-                  <div className="bg-[#3A3A3A] rounded rounded-bl-none border-2 border-[#F1F1F1]/10 px-5 py-3 flex gap-1.5">
+                  <div className="bg-neutral/10 rounded-2xl rounded-bl-md px-5 py-3 flex gap-1">
                     {[0, 150, 300].map((d) => (
                       <span
                         key={d}
-                        className="w-2 h-2 bg-[#FF5722] animate-bounce"
+                        className="w-2 h-2 rounded-full bg-neutral/30 animate-bounce"
                         style={{ animationDelay: `${d}ms` }}
                       />
                     ))}
@@ -111,20 +113,20 @@ export default function Chat() {
             <div ref={bottom} />
           </div>
 
-          <div className="border-t-2 border-[#F1F1F1]/10 p-4 bg-[#2D2D2D]">
+          <div className="border-t border-brand/5 p-4 bg-neutral/[0.03]">
             <form onSubmit={send} className="flex items-center gap-3">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask LLM anything..."
-                className="flex-1 px-5 py-3 rounded border-2 border-[#F1F1F1]/10 bg-[#2D2D2D] text-sm text-[#F1F1F1] font-medium outline-none focus:border-[#FF5722] transition-colors duration-150 placeholder:text-[#F1F1F1]/25"
+                className="flex-1 px-5 py-3 rounded-2xl border border-brand/10 bg-white text-sm text-neutral outline-none focus:border-accent/40 focus:ring-2 focus:ring-accent/10 transition-all duration-200 placeholder:text-neutral/30"
                 disabled={typing}
               />
               <button
                 type="submit"
                 disabled={!input.trim() || typing}
-                className="p-3 rounded border-2 border-[#FF5722] bg-[#FF5722] text-[#2D2D2D] hover:bg-transparent hover:text-[#FF5722] disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-150 cursor-pointer"
+                className="p-3 rounded-2xl bg-accent text-white hover:bg-accent/90 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-lg hover:shadow-accent/20 cursor-pointer"
               >
                 {typing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
               </button>

@@ -1,88 +1,74 @@
 import { motion } from "framer-motion";
+import ParticleField from "./ParticleField";
 import { scrollTo } from "./utils";
+
+const stagger = (i: number) => ({ duration: 0.8, delay: 0.2 + i * 0.1 });
 
 export default function Hero() {
   return (
-    <section
-      className="relative min-h-screen flex items-center justify-center"
-      style={{
-        backgroundImage: "radial-gradient(circle, rgba(241,241,241,0.04) 1px, transparent 1px)",
-        backgroundSize: "28px 28px",
-      }}
-    >
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <ParticleField />
+
       <div className="relative z-10 max-w-3xl mx-auto px-6 py-20 text-center">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-        >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="mb-8"
+            transition={stagger(0)}
+            className="mb-6"
           >
-            <span className="inline-block px-4 py-1.5 border-2 border-[#F1F1F1]/15 text-sm font-bold tracking-[0.25em] uppercase text-[#F1F1F1]/50">
-              Experimental AI Research
+            <span className="inline-block px-4 py-1.5 rounded-full text-sm font-medium tracking-wide border border-brand/20 bg-brand/5 text-brand">
+              Experimental AI Research Project
             </span>
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-            className="text-7xl sm:text-8xl md:text-9xl font-black tracking-tight text-[#F1F1F1] mb-6"
+            transition={stagger(1)}
+            className="text-7xl sm:text-8xl md:text-9xl font-black tracking-tight text-brand mb-6"
           >
             LLM
           </motion.h1>
 
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 0.5, delay: 0.35 }}
-            className="w-20 h-1.5 bg-[#FF5722] mx-auto mb-8 origin-center"
-          />
-
           <motion.p
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-            className="text-xl sm:text-2xl text-[#F1F1F1]/75 font-semibold leading-relaxed mb-5 max-w-2xl mx-auto"
+            transition={stagger(2)}
+            className="text-xl sm:text-2xl text-neutral font-light leading-relaxed mb-8 max-w-2xl mx-auto"
           >
             A 50 million parameter language model built for experimentation, curiosity, and learning.
           </motion.p>
 
           <motion.p
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.4 }}
-            className="text-base text-[#F1F1F1]/45 font-medium leading-relaxed max-w-xl mx-auto mb-12"
+            transition={stagger(3)}
+            className="text-base text-neutral/80 leading-relaxed max-w-xl mx-auto mb-12"
           >
             Exploring transformer architectures, tokenization, optimization, training, and inference
-            from first principles.
+            from first principles — not competing with production-scale models, but understanding how
+            they work.
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.5 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            transition={stagger(4)}
+            className="flex items-center justify-center"
           >
             <button
               onClick={() => scrollTo("chat")}
-              className="px-8 py-3.5 rounded border-2 border-[#FF5722] bg-[#FF5722] text-[#2D2D2D] font-bold text-base shadow-[4px_4px_0px_#FFC107] hover:shadow-[2px_2px_0px_#FFC107] hover:translate-x-0.5 hover:translate-y-0.5 transition-all duration-100 cursor-pointer"
+              className="group relative px-8 py-3.5 rounded-2xl bg-brand text-[#F9C25B] font-semibold text-base shadow-lg shadow-brand/10 hover:shadow-xl hover:shadow-brand/20 transition-all duration-300 hover:-translate-y-0.5 cursor-pointer"
             >
               Try Chat
-            </button>
-            <button
-              onClick={() => scrollTo("architecture")}
-              className="px-8 py-3.5 rounded border-2 border-[#F1F1F1]/15 text-[#F1F1F1] font-bold text-base hover:border-[#FF5722] hover:text-[#FF5722] transition-colors duration-150 cursor-pointer"
-            >
-              Explore Architecture
+              <span className="absolute inset-0 rounded-2xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </button>
           </motion.div>
         </motion.div>
       </div>
+
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#F9C25B] to-transparent pointer-events-none z-10" />
     </section>
   );
 }

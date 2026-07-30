@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-const COLOR = "#CFCFCF";
+const COLOR = "#010101";
 
 export default function ParticleField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
