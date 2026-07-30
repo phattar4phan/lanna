@@ -48,7 +48,7 @@ class TokenDataset(Dataset):
         self.block_size = block_size
         
     def __len__(self):
-        return len(self.data) // self.block_size
+        return (len(self.data) - 1) // self.block_size
     
     def __getitem__(self, idx):
         start = idx * self.block_size
@@ -58,7 +58,7 @@ class TokenDataset(Dataset):
         
         return x, y
 
-def create_loader(path):
+def create_loader_from(path):
     dataset = TokenDataset(
         path,
         CONTEXT_LENGTH
@@ -200,7 +200,7 @@ def train(paths, stage_name, epochs, val_path):
         for path in paths:
             print(f"\n{stage_name}: {path}")
 
-            loader = create_loader(path)
+            loader = create_loader_from(path)
 
             bar = tqdm(
                 loader,
@@ -277,7 +277,7 @@ def train(paths, stage_name, epochs, val_path):
         train_loss = total_loss / total_batches
         train_acc = total_correct / total_tokens * 100
 
-        val_loader = create_loader(val_path)
+        val_loader = create_loader_from(val_path)
 
         val_loss, val_acc = evaluate(val_loader)
 
@@ -298,7 +298,7 @@ def train(paths, stage_name, epochs, val_path):
 train(
     [GENERAL_PATH],
     "BASE",
-    3,
+    2,
     GENERAL_VAL_PATH
 )
 
