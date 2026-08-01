@@ -3,18 +3,59 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, Send } from "lucide-react";
 import { Reveal } from "./utils";
 
-const MOCK = [
-  "That's an interesting question.",
-  "I'm still under active development.",
-  "Here's one possible explanation...",
-  "My current architecture contains approximately 50 million parameters.",
-  "I don't always know the answer, but here's my best guess.",
-];
+const API = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
 type Msg = { id: number; role: "user" | "assistant"; text: string };
+type WireMsg = { role: "user" | "assistant"; text: string };
 
-function pick<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+function toWire(msgs: Msg[]): WireMsg[] {
+  return msgs.map(({ role, text }) => ({ role, text }));
+}
+
+async function streamChat(
+  messages: WireMsg[],
+  onToken: (text: string) => void,
+  signal: AbortSignal,
+): Promise<void> {
+  const res = await fetch(`${API}/chat/stream`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages }),
+    signal,
+  });
+  if (!res.ok || !res.body) {
+    throw new Error(`stream failed: ${res.status}`);
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    const events = buffer.split("\n\n");
+    buffer = events.pop() ?? "";
+
+    for (const event of events) {
+      for (const line of event.split("\n")) {
+        if (!line.startsWith("data: ")) continue;
+        let payload: { type: string; text?: string; message?: string };
+        try {
+          payload = JSON.parse(line.slice(6));
+        } catch {
+          continue;
+        }
+        if (payload.type === "token" && payload.text) {
+          onToken(payload.text);
+        } else if (payload.type === "error") {
+          throw new Error(payload.message ?? "model error");
+        }
+      }
+    }
+  }
 }
 
 export default function Chat() {
@@ -27,28 +68,54 @@ export default function Chat() {
   ]);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const bottom = useRef<HTMLDivElement>(null);
+  const abort = useRef<AbortController | null>(null);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs, typing]);
 
-  function send(e: FormEvent) {
+  useEffect(() => () => abort.current?.abort(), []);
+
+  async function send(e: FormEvent) {
     e.preventDefault();
     const clean = input.trim();
     if (!clean || typing) return;
 
-    setMsgs((p) => [...p, { id: Date.now(), role: "user", text: clean }]);
+    const userMsg: Msg = { id: Date.now(), role: "user", text: clean };
+    const history = [...msgs, userMsg];
+    setMsgs(history);
     setInput("");
     setTyping(true);
+    setError(null);
 
-    setTimeout(() => {
-      setMsgs((p) => [
-        ...p,
-        { id: Date.now() + 1, role: "assistant", text: pick(MOCK) },
-      ]);
+    const assistant: Msg = { id: Date.now() + 1, role: "assistant", text: "" };
+    setMsgs([...history, assistant]);
+
+    const controller = new AbortController();
+    abort.current = controller;
+
+    const update = (delta: string) => {
+      setMsgs((prev) =>
+        prev.map((m) =>
+          m.id === assistant.id ? { ...m, text: m.text + delta } : m,
+        ),
+      );
+    };
+
+    try {
+      await streamChat(toWire(history), update, controller.signal);
+    } catch (err) {
+      if ((err as Error).name === "AbortError") return;
+      setMsgs((prev) =>
+        prev.filter((m) => m.id !== assistant.id || m.text.length > 0),
+      );
+      setError("Model unavailable. Try again in a moment.");
+    } finally {
+      abort.current = null;
       setTyping(false);
-    }, 1000 + Math.random() * 1500);
+    }
   }
 
   const bubble = (role: "user" | "assistant") =>
@@ -65,7 +132,7 @@ export default function Chat() {
               Try LLM
             </h2>
             <p className="text-neutral text-lg font-light">
-              A live demo interface — responses are simulated for now.
+              Live inference — tokens stream back from the model server.
             </p>
           </div>
         </Reveal>
@@ -87,8 +154,8 @@ export default function Chat() {
                   transition={{ duration: 0.3 }}
                   className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
                 >
-                  <div className={`max-w-[80%] px-5 py-3 rounded-2xl text-sm leading-relaxed ${bubble(m.role)}`}>
-                    {m.text}
+                  <div className={`max-w-[80%] px-5 py-3 rounded-2xl text-sm leading-relaxed ${bubble(m.role)} whitespace-pre-wrap`}>
+                    {m.text || "\u00a0"}
                   </div>
                 </motion.div>
               ))}
@@ -110,6 +177,9 @@ export default function Chat() {
                 </motion.div>
               )}
             </AnimatePresence>
+            {error && (
+              <p className="text-center text-xs text-red-500 pt-2">{error}</p>
+            )}
             <div ref={bottom} />
           </div>
 

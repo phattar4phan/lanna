@@ -4,4 +4,11 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    proxy: {
+      '/health': 'http://localhost:8000',
+      '/chat': 'http://localhost:8000',
+      '/chat/stream': 'http://localhost:8000',
+    },
+  },
 })
