@@ -8,6 +8,8 @@ Minimal SLM for English (**~15M parameters**)
 ## Dataset
 Changed to use [***allenai/Dolci-Instruct-SFT***](https://huggingface.co/datasets/allenai/Dolci-Instruct-SFT), gained 1.5 billion tokens to train. Reducing extra time to prepare and preprocess dataset from scratch.
 
+Also with FineWeb Edu with around 300M tokens (stream downloading)
+
 Download via huggingface using datasets:
 ```bash
 # python
@@ -22,7 +24,7 @@ Using trained (from scratch) **sentencepiece**, configurations here below (sente
 ```bash
 spm_train \
   --input=./data/instruct.txt \
-  --model_prefix=./token/lanna \
+  --model_prefix=./token/llm \
   --vocab_size=32000 \
   --model_type=unigram \
   --input_sentence_size=5000000 \
@@ -157,7 +159,7 @@ cd ./lanna
     - Run using sentencepiece command
     ```bash
     spm_train \
-        --input=./data/instruct.txt \
+        --input=./data/instruct.txt,./data/general.txt \
         --model_prefix=./token/lanna \
         --vocab_size=32000 \
         --model_type=unigram \
@@ -174,6 +176,8 @@ cd ./lanna
 uv run src/train.py
 python -m train.py
 ```
+
+Do it wait caution, for my own hardwards it took ~18 hours.
 
 That's it, ONNX exported, ready for deployment.
 
