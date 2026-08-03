@@ -104,7 +104,7 @@ class Transformer(nn.Module):
         self.eval()
         
         for _ in range(max_new_tokens):
-            idx_cond = idx[:, -self.context_length]
+            idx_cond = idx[:, -self.context_length:]
             
             logits, _ = self(idx_cond)
             
