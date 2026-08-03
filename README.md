@@ -149,8 +149,8 @@ cd ./lanna
 - Train tokenizer
     
     once you're done installing required dependecies, it's time to train the tokenizer
-    > [!NOTE]
-    > Be aware of your owned hardware limitations
+> [!NOTE]
+> Be aware of your owned hardware limitations
 
     - Run as a python file (from `./lanna/`)
     ```bash
