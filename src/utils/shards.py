@@ -1,14 +1,15 @@
 import numpy as np
 from pathlib import Path
 
-input = "./data/train.bin"
+instruct_input = "./data/instruct.bin"
+
 output_dir = Path("./data/shards")
 output_dir.mkdir(exist_ok=True)
 
 NUM_SHARDS = 5
 DTYPE = np.uint32
 
-data = np.memmap(input, dtype=DTYPE, mode="r")
+data = np.memmap(instruct_input, dtype=DTYPE, mode="r")
 
 total_tokens = len(data)
 tokens_per_shard = total_tokens // NUM_SHARDS

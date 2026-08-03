@@ -78,31 +78,33 @@ class Transformer(nn.Module):
     def forward(self, idx, targets=None):
         # idx: (batch, sequence)
         x = self.token_embedding(idx)
-        
+
         for block in self.blocks:
             x = block(x)
-            
+
         x = self.norm(x)
-        
+
         logits = self.lm_head(x)
-        
-        loss = None
-        
+
         if targets is not None:
-            loss = F.cross_entropy(logits.view(
-                -1, self.vocab_size
-            ),
-                                   targets.view(-1)
-                                   )
-            
-        return logits, loss
+            loss = F.cross_entropy(
+                logits.view(
+                    -1,
+                    self.vocab_size
+                ),
+                targets.view(-1)
+            )
+
+            return logits, loss
+
+        return logits
     
     @torch.no_grad()
     def generate(self, idx, max_new_tokens, temperature=0.8, top_k=50):
         self.eval()
         
         for _ in range(max_new_tokens):
-            idx_cond = idx[:, -self.context_length]
+            idx_cond = idx[:, -self.context_length:]
             
             logits, _ = self(idx_cond)
             
